@@ -3,7 +3,6 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks('grunt-karma');
     grunt.loadNpmTasks('grunt-contrib-watch');
     grunt.loadNpmTasks('grunt-contrib-uglify');
-    grunt.loadNpmTasks('grunt-contrib-less');
     grunt.loadNpmTasks('grunt-contrib-concat');
     grunt.initConfig({
         concat: {
@@ -27,15 +26,6 @@ module.exports = function (grunt) {
                 }
             }
         },
-        less: {
-            'options': {
-                'compress': true,
-                'sourceMap': true,
-                'sourceMapURL': 'aske.min.css.map',
-                'sourceMapRootpath': '/'
-            },
-            'out': { 'files': { 'public/dist/css/aske.min.css': ['public/less/base.less'] } }
-        },
         karma: {
             'unit': {
                 'configFile': 'karma.conf.js',
@@ -43,10 +33,6 @@ module.exports = function (grunt) {
             }
         },
         watch: {
-            'css': {
-                'files': ['public/less/**/*'],
-                'tasks': ['less']
-            },
             'uglify': {
                 'files': ['public/js/**/*.js'],
                 'tasks': ['concat', 'uglify']
@@ -62,7 +48,6 @@ module.exports = function (grunt) {
     });
     grunt.registerTask('default', [
         'concat',
-        'less',
         'uglify',
         'karma',
         'watch'
