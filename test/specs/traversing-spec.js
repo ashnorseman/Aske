@@ -45,6 +45,30 @@ describe('Traversing', function () {
     document.body.removeChild(div);
   });
 
+  it('Element.getFirstChild()', function () {
+    var div = document.createElement('div');
+
+    div.id = 'children-test';
+    document.body.insertBefore(div, document.body.firstChild);
+
+    expect(document.qs('html').getFirstChild().tagName.toLocaleUpperCase()).to.be.equal('HEAD');
+    expect(document.body.getFirstChild()).to.be.equal(div);
+
+    document.body.removeChild(div);
+  });
+
+  it('Element.getLastChild()', function () {
+    var div = document.createElement('div');
+
+    div.id = 'children-test';
+    document.body.appendChild(div);
+
+    expect(document.qs('html').getLastChild().tagName.toLocaleUpperCase()).to.be.equal('BODY');
+    expect(document.body.getLastChild()).to.be.equal(div);
+
+    document.body.removeChild(div);
+  });
+
   it('Element.is()', function () {
     expect(document.body.is('body')).to.be.ok;
     expect(document.body.is('form')).to.be.not.ok;

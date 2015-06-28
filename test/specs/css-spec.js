@@ -73,6 +73,7 @@ describe('Element', function () {
     expect(inner.position().top).to.be.equal(50);
     expect(inner.position().left).to.be.equal(100);
 
+    document.body.style.margin = '';
     document.body.removeChild(div);
   });
 

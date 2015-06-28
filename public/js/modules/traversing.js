@@ -100,6 +100,38 @@ elementProto.getChildren = function (selector) {
   return children;
 };
 
+elementProto.getFirstChild = function () {
+  var node;
+
+  if (this.firstElementChild) return this.firstElementChild;
+
+  node = this.firstChild;
+
+  while (node && node.nodeType !== 1) {
+    node = node.nextSibling;
+  }
+
+  if (node.nodeType === 1) return node;
+
+  return null;
+};
+
+elementProto.getLastChild = function () {
+  var node;
+
+  if (this.lastElementChild) return this.lastElementChild;
+
+  node = this.lastChild;
+
+  while (node && node.nodeType !== 1) {
+    node = node.previousSibling;
+  }
+
+  if (node.nodeType === 1) return node;
+
+  return null;
+};
+
 elementProto.is = function (arg) {
   var qsResult, len, i;
 
