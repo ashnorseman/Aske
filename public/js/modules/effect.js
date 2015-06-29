@@ -1,27 +1,27 @@
 /**
- * Created by Ash.Zhang on 2015/6/29.
+ * Created by AshZhang on 2015/6/29.
  */
 
 
 elementProto.show = function () {
+  var copy, defaultDisplay;
 
   if (this.style.display === 'none') {
     this.style.display = '';
   }
 
   if (this.css('display') === 'none') {
-
-    if (this.getAttribute('display')) {
-      this.css('display', this.getAttribute('display'));
-    }
+    copy = d.createElement(this.tagName);
+    d.body.appendChild(copy);
+    defaultDisplay = getComputedStyle(copy)['display'];
+    this.style.display = (defaultDisplay === 'none') ? 'block' : defaultDisplay;
+    d.body.removeChild(copy);
   }
+
+  return this;
 };
 
 elementProto.hide = function () {
-  var oldDisplay = this.css('display');
-
-  if (oldDisplay !== 'none') this.setAttribute('display', oldDisplay);
-
   this.style.display = 'none';
 
   return this;

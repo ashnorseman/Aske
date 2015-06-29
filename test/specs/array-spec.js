@@ -14,6 +14,16 @@ describe('Array', function () {
     expect(array.contains(7)).to.be.equal(false);
   });
 
+  it('pack()', function () {
+    var array = [2, undefined, 9];
+
+    expect(array.pack()).to.be.length(2);
+    expect(array.pack()[0]).to.be.equal(2);
+    expect(array.pack()[1]).to.be.equal(9);
+
+    expect([1, 2, 3].pack()).to.be.length(3);
+  });
+
   it('forEach()', function () {
     var array = [2, 5, 9];
 
