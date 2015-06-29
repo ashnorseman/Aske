@@ -132,4 +132,162 @@ describe('Element', function () {
 
     document.body.removeChild(last.previousSibling);
   });
+
+  it('Element.attachAfter()', function () {
+    var div = document.createElement('div'),
+        span = document.createElement('span');
+
+    div.attachAfter(document.body.lastChild);
+    expect(document.body.lastChild).to.be.equal(div);
+
+    div.attachAfter(document.body.firstChild);
+    expect(document.body.firstChild.nextSibling).to.be.equal(div);
+
+    span.attachAfter('div');
+    expect(div.nextSibling).to.be.equal(span);
+
+    document.body.removeChild(div);
+    document.body.removeChild(span);
+  });
+
+  it('Element.attachBefore()', function () {
+    var div = document.createElement('div'),
+        span = document.createElement('span');
+
+    div.attachBefore(document.body.lastChild);
+    expect(document.body.lastChild.previousSibling).to.be.equal(div);
+
+    div.attachBefore(document.body.firstChild);
+    expect(document.body.firstChild).to.be.equal(div);
+
+    span.attachBefore('div');
+    expect(document.body.firstChild).to.be.equal(span);
+
+    document.body.removeChild(div);
+    document.body.removeChild(span);
+  });
+
+  it('Element.wrap()', function () {
+    var span = document.createElement('span');
+
+    document.body.appendChild(span);
+
+    span.wrap('<div id="wrap-test"></div>');
+    expect(document.getElementById('wrap-test').firstChild).to.be.equal(span);
+
+    span.wrap(document.body);
+    expect(span.parentNode).to.be.equal(document.body);
+
+    span.wrap(function () {
+      return '<div id="' + this.tagName.toUpperCase() + '"></div>';
+    });
+    expect(span.parentNode).to.be.equal(document.getElementById('SPAN'));
+
+    document.body.removeChild(document.getElementById('SPAN'));
+    document.body.removeChild(document.getElementById('wrap-test'));
+  });
+
+  it('Element.wrapInner()', function () {
+    var div = document.createElement('div'),
+        span = document.createElement('span');
+
+    div.innerHTML = 'content';
+    document.body.appendChild(div);
+
+    div.wrapInner('<span id="wrap-test"></span>');
+    expect(document.getElementById('wrap-test').innerHTML).to.be.equal('content');
+    expect(document.getElementById('wrap-test').parentNode).to.be.equal(div);
+
+    div.wrapInner(span);
+    expect(span.parentNode).to.be.equal(div);
+    expect(document.getElementById('wrap-test').parentNode).to.be.equal(span);
+
+    div.wrapInner(function () {
+      return '<span id="' + this.tagName.toUpperCase() + '"></span>';
+    });
+
+    expect(document.getElementById('DIV').parentNode).to.be.equal(div);
+    expect(span.parentNode).to.be.equal(document.getElementById('DIV'));
+
+    document.body.removeChild(div);
+  });
+
+  it('Element.unwrap()', function () {
+    var div = document.createElement('div'),
+        span = document.createElement('span');
+
+    div.appendChild(span);
+    document.body.appendChild(div);
+
+    span.unwrap();
+    expect(span.parentNode).to.be.equal(document.body);
+    expect(div.parentNode).to.be.equal(null);
+
+    document.body.removeChild(span);
+  });
+
+  it('Element.replaceWidth()', function () {
+    var old = document.createElement('div'),
+        newSpan = document.createElement('span');
+
+    newSpan.id = 'new-span';
+    document.body.appendChild(old);
+
+    old.replaceWith('<span></span>');
+    expect(old.parentNode).to.be.equal(null);
+    expect(document.body.lastChild.tagName.toUpperCase()).to.be.equal('SPAN');
+
+    document.body.lastChild.replaceWith(newSpan);
+    expect(document.body.lastChild.id).to.be.equal('new-span');
+
+    document.body.lastChild.replaceWith(function () {
+      return '<span id="' + this.tagName.toUpperCase() + '"></span>'
+    });
+    expect(document.body.lastChild.id).to.be.equal('SPAN');
+
+    document.body.removeChild(document.getElementById('SPAN'));
+  });
+
+  it('Element.replaceAll()', function () {
+    document.body.appendChild(document.createElement('span'));
+    document.body.appendChild(document.createElement('span'));
+
+    document.createElement('div').replaceAll('span');
+
+    expect(document.qsa('span')).to.be.length(0);
+    expect(document.qsa('div')).to.be.length(2);
+
+    document.qsa('div').forEach(function (item) {
+      document.body.removeChild(item);
+    });
+  });
+
+  it('Element.empty()', function () {
+    var div = document.createElement('div');
+
+    div.innerHTML = 'content';
+    div.empty();
+    expect(div.innerHTML).to.be.equal('');
+  });
+
+  it('Element.remove()', function () {
+    var div = document.createElement('div');
+
+    div.id = 'remove';
+    document.body.appendChild(div);
+    expect(document.getElementById('remove')).to.be.ok;
+
+    div.remove();
+    expect(document.getElementById('remove')).to.be.not.ok;
+  });
+
+  it('Element.clone()', function () {
+    var div = document.createElement('div');
+
+    expect(div.clone().tagName.toUpperCase()).to.be.equal('DIV');
+
+    div.innerHTML = '1<span></span>';
+    expect(div.clone().innerHTML).to.be.equal('');
+    expect(div.clone(true).innerHTML).to.be.equal('1<span></span>');
+  });
 });

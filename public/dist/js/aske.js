@@ -420,6 +420,119 @@ elementProto.before = function (item) {
 
   return this;
 };
+
+elementProto.attachAfter = function (item) {
+  if (typeof item === 'string') item = d.qs(item);
+
+  item.parentNode.insertBefore(this, item.nextSibling);
+
+  return this;
+};
+
+elementProto.attachBefore = function (item) {
+  if (typeof item === 'string') item = d.qs(item);
+
+  item.parentNode.insertBefore(this, item);
+
+  return this;
+};
+
+elementProto.wrap = function (wrapper) {
+  var wrap;
+
+  if (typeof wrapper === 'function') wrapper = wrapper.call(this);
+
+  if (typeof wrapper === 'string') {
+    wrap = d.createElement('div');
+    wrap.innerHTML = wrapper;
+    wrap = wrap.getFirstChild();
+    this.parentNode.replaceChild(wrap, this);
+    wrap.appendChild(this);
+  } else {
+    wrapper.appendChild(this);
+  }
+
+  return this;
+};
+
+elementProto.wrapInner = function (wrapper) {
+  var wrap, node;
+
+  if (typeof wrapper === 'function') wrapper = wrapper.call(this);
+
+  if (typeof wrapper === 'string') {
+    wrap = d.createElement('div');
+    wrap.innerHTML = wrapper;
+    wrapper = wrap.getFirstChild();
+  }
+
+  node = this.firstChild;
+
+  while (node) {
+    wrapper.appendChild(node);
+    node = node.nextSibling;
+  }
+
+  this.appendChild(wrapper);
+
+  return this;
+};
+
+elementProto.unwrap = function () {
+  var parent = this.parentNode;
+
+  parent.parentNode.replaceChild(this, parent);
+
+  return this;
+};
+
+elementProto.replaceWith = function (content) {
+  var div, node;
+
+  if (typeof content === 'function') content = content.call(this);
+
+  if (typeof content === 'string') {
+    div = d.createElement('div');
+    div.innerHTML = content;
+    node = this;
+
+    while (div.firstChild) {
+      node.after(div.firstChild);
+    }
+
+    this.parentNode.removeChild(this);
+  } else {
+    this.parentNode.replaceChild(content, this);
+  }
+
+  return this;
+};
+
+elementProto.replaceAll = function (selector) {
+  var qsResult = d.qsa(selector);
+
+  qsResult.forEach(function (item) {
+    item.replaceWith(this.cloneNode(true));
+  }, this);
+
+  return this;
+};
+
+elementProto.empty = function () {
+  this.innerHTML = '';
+
+  return this;
+};
+
+elementProto.remove = function () {
+  this.parentNode.removeChild(this);
+
+  return this;
+};
+
+elementProto.clone = function (deep) {
+  return this.cloneNode(deep);
+};
 /**
  * Created by AshZhang on 15/6/28.
  */
