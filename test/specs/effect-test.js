@@ -1,9 +1,9 @@
-/**
- * Created by AshZhang on 15/6/29.
- */
+
+// Effect Spec
+// ---------------------------
 
 
-describe('Element', function () {
+describe('Effect', function () {
 
   it('Element.show()', function () {
     var div = document.createElement('div'),

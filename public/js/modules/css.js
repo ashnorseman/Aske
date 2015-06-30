@@ -1,7 +1,6 @@
-/**
- * Created by AshZhang on 15/6/28.
- */
 
+// CSS
+// ---------------------------
 
 
 elementProto.css = function (prop, value) {

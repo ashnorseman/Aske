@@ -10,7 +10,8 @@ module.exports = function (grunt) {
                 'files': {
                     'public/dist/js/aske.js': [
                         'public/js/intro.js',
-                        'public/js/modules/*.js',
+                        'public/js/core/**/*.js',
+                        'public/js/modules/**/*.js',
                         'public/js/outro.js'
                     ]
                 }

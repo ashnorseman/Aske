@@ -1,6 +1,6 @@
-/**
- * Created by AshZhang on 15/6/27.
- */
+
+// Traversing Spec
+// ---------------------------
 
 
 describe('Traversing', function () {

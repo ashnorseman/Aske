@@ -1,6 +1,6 @@
-/**
- * Created by AshZhang on 15/6/27.
- */
+
+// Array Spec
+// ---------------------------
 
 
 describe('Array', function () {

@@ -1,7 +1,6 @@
-/**
- * Created by AshZhang on 15/6/27.
- */
 
+// Array
+// ---------------------------
 
 
 if (!Array.isArray) Array.isArray = function (obj) {

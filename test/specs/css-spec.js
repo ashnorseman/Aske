@@ -1,9 +1,9 @@
-/**
- * Created by AshZhang on 15/6/28.
- */
+
+// CSS Spec
+// ---------------------------
 
 
-describe('Element', function () {
+describe('CSS', function () {
 
 
   it('Element.css()', function () {

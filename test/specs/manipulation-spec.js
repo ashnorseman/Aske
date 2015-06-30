@@ -1,9 +1,9 @@
-/**
- * Created by AshZhang on 15/6/29.
- */
+
+// Manipulation Spec
+// ---------------------------
 
 
-describe('Element', function () {
+describe('Manipulation', function () {
 
   it('Element.append()', function () {
     document.body.append('<div id="append-test"></div>');

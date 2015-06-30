@@ -1,9 +1,9 @@
-/**
- * Created by AshZhang on 15/6/29.
- */
+
+// Event Spec
+// ---------------------------
 
 
-describe('Element', function () {
+describe('Event', function () {
 
   it('Element.on()', function () {
     var spy = sinon.spy(),
@@ -66,5 +66,32 @@ describe('Element', function () {
     expect(spy3).to.be.calledOnce;
 
     document.body.removeChild(div);
+  });
+
+  it('Element.one()', function () {
+    var spy = sinon.spy();
+
+    document.body.one('click', spy);
+    document.body.click();
+    expect(spy).to.be.calledOnce;
+    document.body.click();
+    expect(spy).to.be.calledOnce;
+  });
+
+  it('Element.trigger()', function () {
+    var spy = sinon.spy();
+
+    document.body.on('click', spy);
+    document.body.trigger('click');
+    expect(spy).to.be.calledOnce;
+    expect(spy).to.be.calledOn(document.body);
+    expect(spy.firstCall.args[0].target).to.be.equal(document.body);
+
+    document.body.trigger('click', { test: 'testing' });
+    expect(spy.secondCall.args[0].target).to.be.equal(document.body);
+    expect(spy.secondCall.args[0].test).to.be.equal('testing');
+    expect(spy).to.be.calledTwice;
+
+    document.body.off();
   });
 });

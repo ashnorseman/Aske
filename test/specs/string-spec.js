@@ -1,6 +1,6 @@
-/**
- * Created by AshZhang on 15/6/28.
- */
+
+// String Spec
+// ---------------------------
 
 
 describe('String', function () {

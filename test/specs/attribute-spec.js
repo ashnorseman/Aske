@@ -1,9 +1,9 @@
-/**
- * Created by AshZhang on 15/6/28.
- */
+
+// Attribute Spec
+// ---------------------------
 
 
-describe('Element', function () {
+describe('Attribute', function () {
 
   it('Element.attr()', function () {
     var div = document.createElement('div');

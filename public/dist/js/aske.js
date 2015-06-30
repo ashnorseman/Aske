@@ -2,13 +2,15 @@
   'use strict';
 
   var arrayProto = Array.prototype,
+      objectProto = Object.prototype,
+      stringProto = String.prototype,
+      docProto = HTMLDocument.prototype,
       elementProto = Element.prototype,
       slice = arrayProto.slice;
 
-/**
- * Created by AshZhang on 15/6/27.
- */
 
+// Array
+// ---------------------------
 
 
 if (!Array.isArray) Array.isArray = function (obj) {
@@ -55,10 +57,38 @@ if (!arrayProto.filter) arrayProto.filter = function (callback, context) {
   return result;
 };
 
-/**
- * Created by AshZhang on 15/6/28.
- */
 
+// Object
+// ---------------------------
+
+
+objectProto.extend = function () {
+  var len = arguments.length,
+      i, src, key;
+
+  for (i = 0; i < len; i += 1) {
+    src = arguments[i];
+
+    for (key in src) if (src.hasOwnProperty(key)) {
+      this[key] = src[key];
+    }
+  }
+
+  return this;
+};
+
+
+// String
+// ---------------------------
+
+
+stringProto.trim = function () {
+  return this.replace(/^\s+/, '').replace(/\s+$/, '');
+};
+
+
+// Attribute
+// ---------------------------
 
 
 function addOneClass(el, className) {
@@ -215,10 +245,9 @@ elementProto.val = function (value) {
   return this;
 };
 
-/**
- * Created by AshZhang on 15/6/28.
- */
 
+// CSS
+// ---------------------------
 
 
 elementProto.css = function (prop, value) {
@@ -334,22 +363,43 @@ elementProto.outerWidth = function (hasMargin) {
       + (hasMargin ? parseInt(this.css('marginRight'), 10) : 0);
 };
 
-/**
- * Created by AshZhang on 15/6/28.
- */
+
+// Document
+// ---------------------------
 
 
-HTMLDocument.prototype.qs = function (selector) {
+docProto.qs = function (selector) {
   return this.querySelector(selector);
 };
 
-HTMLDocument.prototype.qsa = function (selector) {
-  return Array.prototype.slice.call(this.querySelectorAll(selector));
+docProto.qsa = function (selector) {
+  return slice.call(this.querySelectorAll(selector));
 };
 
-/**
- * Created by AshZhang on 2015/6/29.
- */
+docProto.ready = function (cb) {
+  var callback;
+
+  if (d.readyState === 'interactive' || d.readyState === 'complete') {
+    cb.call(this);
+    return this;
+  }
+
+  callback = function callback() {
+
+    if (d.readyState === 'interactive' || d.readyState === 'complete') {
+      cb.call(this);
+      this.off('readystatechange', callback);
+    }
+  };
+
+  this.on('readystatechange', callback);
+
+  return this;
+};
+
+
+// Effect
+// ---------------------------
 
 
 elementProto.show = function () {
@@ -375,9 +425,10 @@ elementProto.hide = function () {
 
   return this;
 };
-/**
- * Created by AshZhang on 15/6/29.
- */
+
+
+// Event
+// ---------------------------
 
 
 function addEvent(element, event, callback) {
@@ -387,7 +438,7 @@ function addEvent(element, event, callback) {
   } else if (element.attachEvent) {
     element.attachEvent('on' + event, callback);
   }
-};
+}
 
 function removeEvent(element, event, callback) {
 
@@ -396,7 +447,7 @@ function removeEvent(element, event, callback) {
   } else if (element.detachEvent) {
     element.detachEvent('on' + event, callback);
   }
-};
+}
 
 elementProto.on = function (ev, selector, data, callback) {
   var packedCallback;
@@ -437,7 +488,7 @@ elementProto.on = function (ev, selector, data, callback) {
 };
 
 elementProto.off = function (ev, selector, callback) {
-  var ev, sel;
+  var sel;
 
   if (!this._events || !this.__events) return this;
 
@@ -480,9 +531,58 @@ elementProto.off = function (ev, selector, callback) {
 
   return this;
 };
-/**
- * Created by AshZhang on 15/6/29.
- */
+
+elementProto.one = function (ev, selector, data, callback) {
+  var packedCallback;
+
+  if (typeof selector === 'function') {
+    callback = selector;
+    selector = '';
+  }
+
+  if (typeof data === 'function') {
+    callback = data;
+    data = null;
+  }
+
+  packedCallback = function packedCallback() {
+    callback.apply(this, arguments);
+    this.off(ev, selector, packedCallback);
+  };
+
+  this.on(ev, selector, data, packedCallback);
+
+  return this;
+};
+
+elementProto.trigger = function (ev, data) {
+  var event;
+
+  if (typeof CustomEvent === 'function') {
+    event = new CustomEvent(ev);
+  } else if (d.createEventObject) {
+    event = d.createEventObject();
+  } else {
+    return this;
+  }
+
+  event.target = this;
+  event.eventType = ev;
+  event.eventName = ev;
+  event.extend(data);
+
+  if (this.dispatchEvent) {
+    this.dispatchEvent(event);
+  } else if (this.fireEvent){
+    this.fireEvent('on' + ev, event);
+  }
+
+  return this;
+};
+
+
+// Manipulation
+// ---------------------------
 
 
 elementProto.append = function (item) {
@@ -684,18 +784,10 @@ elementProto.remove = function () {
 elementProto.clone = function (deep) {
   return this.cloneNode(deep);
 };
-/**
- * Created by AshZhang on 15/6/28.
- */
 
 
-String.prototype.trim = function () {
-  return this.replace(/^\s+/, '').replace(/\s+$/, '');
-};
-
-/**
- * Created by AshZhang on 15/6/27.
- */
+// Traversing
+// ---------------------------
 
 
 function getElementChildren(node) {

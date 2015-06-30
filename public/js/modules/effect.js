@@ -1,6 +1,6 @@
-/**
- * Created by AshZhang on 2015/6/29.
- */
+
+// Effect
+// ---------------------------
 
 
 elementProto.show = function () {

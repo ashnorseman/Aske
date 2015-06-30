@@ -1,6 +1,6 @@
-/**
- * Created by AshZhang on 15/6/29.
- */
+
+// Manipulation
+// ---------------------------
 
 
 elementProto.append = function (item) {
