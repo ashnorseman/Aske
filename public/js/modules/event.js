@@ -41,7 +41,7 @@ function Event(e, el, delegateEl, data) {
     e.which = (e.button & 1 ? 1 : (e.button & 2 ? 3 : (e.button & 4 ? 2 : 0)));
   }
 
-  if (e.srcElement !== void 0) e.target === e.srcElement;
+  if (!e.target) e.target = (e.srcElement ? e.srcElement : el);
 
   e.prototype = Event.prototype;
 
@@ -210,7 +210,7 @@ elementProto.triggerHandler = function (ev, data) {
 
   if (this._events && this._events[ev] && this._events[ev]['']) {
     this._events[ev][''].forEach(function (cb) {
-      cb.call(this, new Event(null, this, this, data));
+      cb.call(this, new Event({ type: ev }, this, this, data));
     }, this);
   }
 

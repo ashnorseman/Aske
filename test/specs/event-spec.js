@@ -103,8 +103,7 @@ describe('Event', function () {
     expect(spy).to.be.calledOnce;
     expect(spy).to.be.calledOn(document.body);
     expect(spy.firstCall.args[0].target).to.be.equal(document.body);
-    expect(spy.firstCall.args[0].eventName).to.be.equal('click');
-    expect(spy.firstCall.args[0].eventType).to.be.equal('click');
+    expect(spy.firstCall.args[0].type).to.be.equal('click');
 
     document.body.trigger('click', { test: 'testing' });
     expect(spy.secondCall.args[0].target).to.be.equal(document.body);
