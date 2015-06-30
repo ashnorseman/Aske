@@ -21,6 +21,62 @@ function removeEvent(element, event, callback) {
   }
 }
 
+function Event(e, el, delegateEl, data) {
+  e || (e = {});
+  data && (e.data = data);
+
+  e.currentTarget = el;
+  e.delegateEl = delegateEl;
+
+  if (e.x !== void 0) {
+    e.pageX = e.x;
+    e.pageY = e.y;
+  }
+
+  if (e.keyCode !== void 0) {
+    e.which = e.keyCode;
+  } else if (e.charCode !== void 0) {
+    e.which = e.charCode;
+  } else if (e.button !== void 0) {
+    e.which = (e.button & 1 ? 1 : (e.button & 2 ? 3 : (e.button & 4 ? 2 : 0)));
+  }
+
+  if (e.srcElement !== void 0) e.target === e.srcElement;
+
+  e.prototype = Event.prototype;
+
+  if (e.timeStamp === void 0) e.timeStamp = new Date().valueOf();
+
+  return e;
+}
+
+Event.prototype.extend({
+
+  isDefaultPrevented: function () {
+    if (this.cancelable !== void 0) return this.cancelable;
+
+    return !this.returnValue;
+  },
+
+  isPropagationStopped: function () {
+    if (this.bubbles !== void 0) return !this.bubbles;
+
+    return this.cancelBubble;
+  },
+
+  preventDefault: function () {
+    if (this.preventDefault) return this.preventDefault();
+
+    this.returnValue = false;
+  },
+
+  stopPropagation: function () {
+    if (this.stopPropagation) return this.stopPropagation();
+
+    this.cancelBubble = true;
+  }
+});
+
 elementProto.on = function (ev, selector, data, callback) {
   var packedCallback;
 
@@ -44,10 +100,11 @@ elementProto.on = function (ev, selector, data, callback) {
   if (!this._events[ev][selector].contains(callback)) {
     packedCallback = function (e) {
       e || (e = event);
-      data && (e.data = data);
 
-      if (!selector || this.qsa(selector).contains(e.target || e.srcElement))
-        return callback.call(e.target || e.srcElement, e);
+      if (!selector || this.qsa(selector).contains(e.target)) {
+        e = new Event(e, e.target, this, data);
+        return callback.call(e.target, e);
+      }
     };
 
     addEvent(this, ev, packedCallback);
@@ -138,10 +195,7 @@ elementProto.trigger = function (ev, data) {
     return this;
   }
 
-  event.target = this;
-  event.eventType = ev;
-  event.eventName = ev;
-  event.extend(data);
+  event = new Event(event, this, this, data);
 
   if (this.dispatchEvent) {
     this.dispatchEvent(event);
@@ -151,3 +205,53 @@ elementProto.trigger = function (ev, data) {
 
   return this;
 };
+
+elementProto.triggerHandler = function (ev, data) {
+
+  if (this._events && this._events[ev] && this._events[ev]['']) {
+    this._events[ev][''].forEach(function (cb) {
+      cb.call(this, new Event(null, this, this, data));
+    }, this);
+  }
+
+  return this;
+};
+
+function eventListener(ev) {
+
+  return function (data, cb) {
+    if (!arguments.length) return this.trigger(ev);
+
+    return this.on(ev, '', data, cb);
+  }
+}
+
+elementProto.onBlur = eventListener('blur');
+elementProto.onClick = eventListener('click');
+elementProto.onChange = eventListener('change');
+elementProto.onDblClick = eventListener('dblclick');
+elementProto.onError = eventListener('error');
+elementProto.onFocus = eventListener('focus');
+elementProto.onFocusIn = eventListener('focusin');
+elementProto.onFocusOut = eventListener('focusout');
+elementProto.onKeyDown = eventListener('keydown');
+elementProto.onKeyPress = eventListener('keypress');
+elementProto.onKeyUp = eventListener('keyup');
+elementProto.onMouseDown = eventListener('mousedown');
+elementProto.onMouseEnter = eventListener('mouseenter');
+elementProto.onMouseLeave = eventListener('mouseleave');
+elementProto.onMouseMove = eventListener('mousemove');
+elementProto.onMouseOut = eventListener('mouseout');
+elementProto.onMouseOver = eventListener('mouseover');
+elementProto.onMouseUp = eventListener('mouseup');
+elementProto.onLoad = eventListener('load');
+elementProto.onSelect = eventListener('select');
+elementProto.onSubmit = eventListener('submit');
+
+window.on = elementProto.on;
+window.off = elementProto.off;
+window.trigger = elementProto.trigger;
+window.one = elementProto.one;
+window.onLoad = elementProto.onLoad;
+window.onResize = eventListener('resize');
+window.onUnload = eventListener('unload');

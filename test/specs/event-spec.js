@@ -89,9 +89,77 @@ describe('Event', function () {
 
     document.body.trigger('click', { test: 'testing' });
     expect(spy.secondCall.args[0].target).to.be.equal(document.body);
-    expect(spy.secondCall.args[0].test).to.be.equal('testing');
+    expect(spy.secondCall.args[0].data.test).to.be.equal('testing');
     expect(spy).to.be.calledTwice;
 
     document.body.off();
+  });
+
+  it('Element.triggerHandler()', function () {
+    var spy = sinon.spy();
+
+    document.body.on('click', spy);
+    document.body.triggerHandler('click');
+    expect(spy).to.be.calledOnce;
+    expect(spy).to.be.calledOn(document.body);
+    expect(spy.firstCall.args[0].target).to.be.equal(document.body);
+    expect(spy.firstCall.args[0].eventName).to.be.equal('click');
+    expect(spy.firstCall.args[0].eventType).to.be.equal('click');
+
+    document.body.trigger('click', { test: 'testing' });
+    expect(spy.secondCall.args[0].target).to.be.equal(document.body);
+    expect(spy.secondCall.args[0].data.test).to.be.equal('testing');
+    expect(spy).to.be.calledTwice;
+
+    document.body.off();
+  });
+
+  it('Element.onBlur()', function () {
+    var input = document.createElement('input'),
+        spy = sinon.spy();
+
+    document.body.appendChild(input);
+    input.onBlur({ test: 'testing' }, spy);
+
+    expect(spy).to.be.not.called;
+    input.trigger('blur');
+    expect(spy).to.be.calledOnce;
+    expect(spy).to.be.calledOn(input);
+    expect(spy.firstCall.args[0].data.test).to.be.equal('testing');
+
+    document.body.removeChild(input);
+  });
+
+  it('Element.onChange()', function () {
+    var input = document.createElement('input'),
+        spy = sinon.spy();
+
+    document.body.appendChild(input);
+    input.onChange({ test: 'testing' }, spy);
+
+    expect(spy).to.be.not.called;
+    input.value = 'value';
+    input.trigger('change');
+    expect(spy).to.be.calledOnce;
+    expect(spy).to.be.calledOn(input);
+    expect(spy.firstCall.args[0].data.test).to.be.equal('testing');
+
+    document.body.removeChild(input);
+  });
+
+  it('Element.onClick()', function () {
+    var input = document.createElement('input'),
+        spy = sinon.spy();
+
+    document.body.appendChild(input);
+    input.onClick({ test: 'testing' }, spy);
+
+    expect(spy).to.be.not.called;
+    input.click();
+    expect(spy).to.be.calledOnce;
+    expect(spy).to.be.calledOn(input);
+    expect(spy.firstCall.args[0].data.test).to.be.equal('testing');
+
+    document.body.removeChild(input);
   });
 });
