@@ -3,7 +3,12 @@
 // ---------------------------
 
 
+/*
+ * Functions
+ */
+
 function addEvent(element, event, callback) {
+  if (!(element instanceof Element) && element !== window) return;
 
   if (element.addEventListener) {
     element.addEventListener(event, callback, false);
@@ -13,6 +18,7 @@ function addEvent(element, event, callback) {
 }
 
 function removeEvent(element, event, callback) {
+  if (!(element instanceof Element) && element !== window) return;
 
   if (element.removeEventListener) {
     element.removeEventListener(event, callback, false);
@@ -20,6 +26,20 @@ function removeEvent(element, event, callback) {
     element.detachEvent('on' + event, callback);
   }
 }
+
+function eventListener(ev) {
+
+  return function (data, cb) {
+    if (!arguments.length) return this.trigger(ev);
+
+    return this.on(ev, '', data, cb);
+  }
+}
+
+
+/*
+ * Event object
+ */
 
 function Event(e, el, delegateEl, data) {
   e || (e = {});
@@ -77,154 +97,166 @@ Event.prototype.extend({
   }
 });
 
-elementProto.on = function (ev, selector, data, callback) {
-  var packedCallback;
 
-  if (typeof selector === 'function') {
-    callback = selector;
-    selector = '';
-  }
+/*
+ * Event interface
+ */
 
-  if (typeof data === 'function') {
-    callback = data;
-    data = null;
-  }
+window.EventInterface = {}.extend({
 
-  this._events || (this._events = {});
-  this.__events || (this.__events = {});
-  this._events[ev] || (this._events[ev] = {});
-  this.__events[ev] || (this.__events[ev] = {});
-  this._events[ev][selector] || (this._events[ev][selector] = []);
-  this.__events[ev][selector] || (this.__events[ev][selector] = []);
+  on: function (ev, selector, data, callback) {
+    var packedCallback;
 
-  if (!this._events[ev][selector].contains(callback)) {
-    packedCallback = function (e) {
-      e || (e = event);
+    if (typeof selector === 'function') {
+      callback = selector;
+      selector = '';
+    }
 
-      if (!selector || this.qsa(selector).contains(e.target)) {
-        e = new Event(e, e.target, this, data);
-        return callback.call(e.target, e);
+    if (typeof data === 'function') {
+      callback = data;
+      data = null;
+    }
+
+    this._events || (this._events = {});
+    this.__events || (this.__events = {});
+    this._events[ev] || (this._events[ev] = {});
+    this.__events[ev] || (this.__events[ev] = {});
+    this._events[ev][selector] || (this._events[ev][selector] = []);
+    this.__events[ev][selector] || (this.__events[ev][selector] = []);
+
+    if (!this._events[ev][selector].contains(callback)) {
+      packedCallback = function (e) {
+        e || (e = event);
+
+        if (!selector || this.qsa(selector).contains(e.target)) {
+          e = new Event(e, e.target, this, data);
+          return callback.call(e.target, e);
+        }
+      };
+
+      addEvent(this, ev, packedCallback);
+
+      this._events[ev][selector].push(packedCallback);
+      this.__events[ev][selector].push(callback);
+    }
+
+    return this;
+  },
+
+  off: function (ev, selector, callback) {
+    var sel;
+
+    if (!this._events || !this.__events) return this;
+
+    if (selector === void 0) {
+
+      for (ev in this.__events) if (this.__events.hasOwnProperty(ev) && this.__events[ev]) {
+
+        for (sel in this.__events[ev]) if (this.__events[ev].hasOwnProperty(sel) && this.__events[ev][sel]) {
+
+          this.__events[ev][sel].forEach(function (cb, i) {
+            removeEvent(this, ev, this._events[ev][sel][i]);
+          }, this);
+        }
       }
+
+      this._events = {};
+      this.__events = {};
+
+      return this;
+    }
+
+    if (typeof selector === 'function') {
+      callback = selector;
+      selector = '';
+    }
+
+    if (!this.__events[ev] || !this.__events[ev][selector]) return this;
+
+    this.__events[ev][selector].forEach(function (cb, i, arr) {
+
+      if (!callback || callback === cb) {
+        removeEvent(this, ev, this._events[ev][selector][i]);
+        arr[i] = void 0;
+        this._events[ev][selector][i] = void 0;
+      }
+    }, this);
+
+    this._events[ev][selector] = this._events[ev][selector].pack();
+    this.__events[ev][selector] = this.__events[ev][selector].pack();
+
+    return this;
+  },
+
+  one: function (ev, selector, data, callback) {
+    var packedCallback;
+
+    if (typeof selector === 'function') {
+      callback = selector;
+      selector = '';
+    }
+
+    if (typeof data === 'function') {
+      callback = data;
+      data = null;
+    }
+
+    packedCallback = function packedCallback() {
+      callback.apply(this, arguments);
+      this.off(ev, selector, packedCallback);
     };
 
-    addEvent(this, ev, packedCallback);
+    this.on(ev, selector, data, packedCallback);
 
-    this._events[ev][selector].push(packedCallback);
-    this.__events[ev][selector].push(callback);
-  }
+    return this;
+  },
 
-  return this;
-};
+  trigger: function (ev, data) {
+    var event, args;
 
-elementProto.off = function (ev, selector, callback) {
-  var sel;
-
-  if (!this._events || !this.__events) return this;
-
-  if (selector === void 0) {
-
-    for (ev in this.__events) if (this.__events.hasOwnProperty(ev) && this.__events[ev]) {
-
-      for (sel in this.__events[ev]) if (this.__events[ev].hasOwnProperty(sel) && this.__events[ev][sel]) {
-
-        this.__events[ev][sel].forEach(function (cb, i) {
-          removeEvent(this, ev, this._events[ev][sel][i]);
-        }, this);
-      }
+    if (typeof CustomEvent === 'function') {
+      event = new CustomEvent(ev);
+    } else if (d.createEventObject) {
+      event = d.createEventObject();
+    } else {
+      return this;
     }
 
-    this._events = {};
-    this.__events = {};
+    event = new Event(event, this, this, data);
+
+    if (this.dispatchEvent) {
+      this.dispatchEvent(event);
+    } else if (this.fireEvent){
+      this.fireEvent('on' + ev, event);
+    } else {
+      args = arguments;
+
+      this.__events[ev][''].forEach(function (cb) {
+        cb.apply(this, slice.call(args, 1));
+      }, this);
+    }
+
+    return this;
+  },
+
+  triggerHandler: function (ev, data) {
+
+    if (this._events && this._events[ev] && this._events[ev]['']) {
+      this._events[ev][''].forEach(function (cb) {
+        cb.call(this, new Event({ type: ev }, this, this, data));
+      }, this);
+    }
 
     return this;
   }
+});
 
-  if (typeof selector === 'function') {
-    callback = selector;
-    selector = '';
-  }
+elementProto.extend(EventInterface);
 
-  if (!this.__events[ev] || !this.__events[ev][selector]) return this;
 
-  this.__events[ev][selector].forEach(function (cb, i, arr) {
-
-    if (!callback || callback === cb) {
-      removeEvent(this, ev, this._events[ev][selector][i]);
-      arr[i] = void 0;
-      this._events[ev][selector][i] = void 0;
-    }
-  }, this);
-
-  this._events[ev][selector] = this._events[ev][selector].pack();
-  this.__events[ev][selector] = this.__events[ev][selector].pack();
-
-  return this;
-};
-
-elementProto.one = function (ev, selector, data, callback) {
-  var packedCallback;
-
-  if (typeof selector === 'function') {
-    callback = selector;
-    selector = '';
-  }
-
-  if (typeof data === 'function') {
-    callback = data;
-    data = null;
-  }
-
-  packedCallback = function packedCallback() {
-    callback.apply(this, arguments);
-    this.off(ev, selector, packedCallback);
-  };
-
-  this.on(ev, selector, data, packedCallback);
-
-  return this;
-};
-
-elementProto.trigger = function (ev, data) {
-  var event;
-
-  if (typeof CustomEvent === 'function') {
-    event = new CustomEvent(ev);
-  } else if (d.createEventObject) {
-    event = d.createEventObject();
-  } else {
-    return this;
-  }
-
-  event = new Event(event, this, this, data);
-
-  if (this.dispatchEvent) {
-    this.dispatchEvent(event);
-  } else if (this.fireEvent){
-    this.fireEvent('on' + ev, event);
-  }
-
-  return this;
-};
-
-elementProto.triggerHandler = function (ev, data) {
-
-  if (this._events && this._events[ev] && this._events[ev]['']) {
-    this._events[ev][''].forEach(function (cb) {
-      cb.call(this, new Event({ type: ev }, this, this, data));
-    }, this);
-  }
-
-  return this;
-};
-
-function eventListener(ev) {
-
-  return function (data, cb) {
-    if (!arguments.length) return this.trigger(ev);
-
-    return this.on(ev, '', data, cb);
-  }
-}
+/*
+ * Listen for DOM events
+ */
 
 elementProto.onBlur = eventListener('blur');
 elementProto.onClick = eventListener('click');

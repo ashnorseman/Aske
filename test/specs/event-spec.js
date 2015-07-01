@@ -5,6 +5,37 @@
 
 describe('Event', function () {
 
+  it('EventInterface', function () {
+    var obj = {}.extend(EventInterface),
+        spy = sinon.spy(),
+        spy2 = sinon.spy();
+
+    obj.on('event', spy);
+    expect(spy).to.be.not.called;
+    obj.trigger('event', 'test');
+    expect(spy).to.be.calledOnce;
+    expect(spy).to.be.calledOn(obj);
+    expect(spy.firstCall.args[0]).to.be.equal('test');
+
+    obj.on('event', spy2);
+    obj.trigger('event', 'test2');
+    expect(spy).to.be.calledTwice;
+    expect(spy.secondCall.args[0]).to.be.equal('test2');
+    expect(spy2).to.be.calledOnce;
+    expect(spy2.firstCall.args[0]).to.be.equal('test2');
+
+    obj.off('event', spy);
+    obj.trigger('event');
+    expect(spy).to.be.calledTwice;
+    expect(spy2).to.be.calledTwice;
+
+    obj.one('event', spy);
+    obj.trigger('event');
+    expect(spy).to.be.calledThrice;
+    obj.trigger('event');
+    expect(spy).to.be.calledThrice;
+  });
+
   it('Element.on()', function () {
     var spy = sinon.spy(),
         spy2 = sinon.spy(),
@@ -88,6 +119,23 @@ describe('Event', function () {
     expect(spy.firstCall.args[0].target).to.be.equal(document.body);
 
     document.body.trigger('click', { test: 'testing' });
+    expect(spy.secondCall.args[0].target).to.be.equal(document.body);
+    expect(spy.secondCall.args[0].data.test).to.be.equal('testing');
+    expect(spy).to.be.calledTwice;
+
+    document.body.off();
+  });
+
+  it('Element.trigger() - none browser events', function () {
+    var spy = sinon.spy();
+
+    document.body.on('ash', spy);
+    document.body.trigger('ash');
+    expect(spy).to.be.calledOnce;
+    expect(spy).to.be.calledOn(document.body);
+    expect(spy.firstCall.args[0].target).to.be.equal(document.body);
+
+    document.body.trigger('ash', { test: 'testing' });
     expect(spy.secondCall.args[0].target).to.be.equal(document.body);
     expect(spy.secondCall.args[0].data.test).to.be.equal('testing');
     expect(spy).to.be.calledTwice;
